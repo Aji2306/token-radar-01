@@ -1,13 +1,23 @@
 // main.ts: Token Radar entrypoint for Node 22 (standard library only, erasable TypeScript).
 
 import { readFileSync, writeFileSync, mkdirSync, cpSync, existsSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { join, resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { parseSnapshot, buildBoardRows, boardIssue } from './lib/model.ts';
 import { buildDossier } from './vendor/makefun-board.ts';
 
+const REPO_ROOT = dirname(fileURLToPath(import.meta.url));
+
 function parseArgs(): { inputPath: string; outputPath: string } {
   const args = process.argv.slice(2);
-  let inputPath = process.env.MAKEFUN_INPUT || '/input/snapshot.json';
+  let inputPath = process.env.MAKEFUN_INPUT;
+  if (!inputPath) {
+    if (process.env.MAKEFUN_INPUT_DIR) {
+      inputPath = join(process.env.MAKEFUN_INPUT_DIR, 'snapshot.json');
+    } else {
+      inputPath = '/input/snapshot.json';
+    }
+  }
   let outputPath = process.env.MAKEFUN_OUTPUT_DIR || '/output';
 
   for (let i = 0; i < args.length; i++) {
@@ -18,14 +28,6 @@ function parseArgs(): { inputPath: string; outputPath: string } {
     } else if (arg === '--output' && args[i + 1]) {
       outputPath = args[i + 1]!;
       i++;
-    }
-  }
-
-  // Fallback if default /input doesn't exist locally
-  if (inputPath === '/input/snapshot.json' && !existsSync(inputPath)) {
-    const localKitPath = '/home/hatch/workspace/makefun/token-radar-01-kit/input/snapshot.json';
-    if (existsSync(localKitPath)) {
-      inputPath = localKitPath;
     }
   }
 
@@ -59,7 +61,8 @@ function main(): void {
     console.error(`[TokenRadar] ERROR: Board validation failed: ${err}`);
     process.exit(1);
   }
-  console.log(`[TokenRadar] Board successfully validated: ${rows.length} rows ranked (Rank 1: ${rows[0]?.name} [$${rows[0]?.implied_value_usd.toLocaleString()}], Rank 250: ${rows[249]?.name} [$${rows[249]?.implied_value_usd.toLocaleString()}])`);
+  const lastIndex = rows.length - 1;
+  console.log(`[TokenRadar] Board successfully validated: ${rows.length} rows ranked (Rank 1: ${rows[0]?.name} [$${rows[0]?.implied_value_usd.toLocaleString()}], Rank ${rows.length}: ${rows[lastIndex]?.name} [$${rows[lastIndex]?.implied_value_usd.toLocaleString()}])`);
 
   // Ensure output directories exist
   mkdirSync(outputPath, { recursive: true });
@@ -89,19 +92,21 @@ function main(): void {
   console.log(`[TokenRadar] Written: ${dataJsPath}`);
 
   // 3. Copy dashboard files to output/dashboard/
-  if (existsSync('dashboard')) {
-    cpSync('dashboard', outDashboardDir, { recursive: true });
+  const repoDashboard = join(REPO_ROOT, 'dashboard');
+  if (existsSync(repoDashboard)) {
+    cpSync(repoDashboard, outDashboardDir, { recursive: true });
     console.log(`[TokenRadar] Copied dashboard/ to ${outDashboardDir}`);
   } else {
-    console.warn(`[TokenRadar] WARNING: dashboard/ directory not found locally.`);
+    console.warn(`[TokenRadar] WARNING: dashboard/ directory not found at ${repoDashboard}.`);
   }
 
   // 4. Copy screenshots to output/screenshots/
-  if (existsSync('screenshots')) {
-    cpSync('screenshots', outScreenshotsDir, { recursive: true });
+  const repoScreenshots = join(REPO_ROOT, 'screenshots');
+  if (existsSync(repoScreenshots)) {
+    cpSync(repoScreenshots, outScreenshotsDir, { recursive: true });
     console.log(`[TokenRadar] Copied screenshots/ to ${outScreenshotsDir}`);
   } else {
-    console.warn(`[TokenRadar] WARNING: screenshots/ directory not found locally.`);
+    console.warn(`[TokenRadar] WARNING: screenshots/ directory not found at ${repoScreenshots}.`);
   }
 
   // 5. Build and write dossier.json using vendor/makefun-board.ts
