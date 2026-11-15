@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Token Radar | Pre-Token Intelligence & Airdrop Farm</title>
+  <link rel="stylesheet" href="app.css">
+</head>
+<body>
+  <header>
+    <div class="header-content">
+      <h1>⚡ Token Radar</h1>
+      <p class="subtitle">Pre-Token Protocol Valuation & Airdrop Farm Intelligence</p>
+      <div id="meta-bar" class="meta-bar"></div>
+    </div>
+  </header>
+
+  <main id="app">
+    <div id="view-board" class="view">
+      <div class="controls">
+        <input type="text" id="search-input" placeholder="Search protocols, categories, chains..." aria-label="Search protocols">
+        <select id="category-filter" aria-label="Filter by category">
+          <option value="">All Categories</option>
+        </select>
+        <label class="toggle-label">
+          <input type="checkbox" id="watchlist-toggle"> Watchlist Only (<span id="watchlist-count">0</span>)
+        </label>
+        <span class="row-counter">Showing <span id="visible-count">0</span> of <span id="total-count">0</span> protocols</span>
+      </div>
+
+      <div class="table-container">
+        <table id="radar-table">
+          <thead>
+            <tr>
+              <th data-sort="rank">Rank ↕</th>
+              <th data-sort="name">Protocol ↕</th>
+              <th data-sort="category">Category ↕</th>
+              <th data-sort="chains">Chains</th>
+              <th data-sort="tvl_usd" class="num">TVL ($) ↕</th>
+              <th data-sort="change_7d" class="num">7d Change ↕</th>
+              <th data-sort="age_days" class="num">Age (Days) ↕</th>
+              <th data-sort="implied_value_usd" class="num">Implied Value ($) ↕</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody id="table-body">
+            <!-- Populated by app.js -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div id="view-detail" class="view hidden">
+      <div class="detail-nav">
+        <a href="#/" class="back-btn">&larr; Back to Radar Board</a>
+      </div>
+      <div id="detail-content">
+        <!-- Populated by app.js -->
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <p>Token Radar &bull; Built for make.fun &bull; Zero Network &bull; Derived from DefiLlama Snapshot</p>
+  </footer>
+
+  <script src="../data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
